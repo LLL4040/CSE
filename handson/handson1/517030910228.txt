@@ -1,0 +1,27 @@
+Q1: Please briefly answer the role of DNS in your own words. 
+A1: DNS是将域名翻译成对应的IP地址的服务器。
+
+Q2: The type field have a few different values to indicate the kind of this record. What do "A", "NS" and "CNAME" mean? 
+A2: "A"即Address，主机地址资源记录，是用来指定主机名或域名对应的IP地址的记录。
+    "NS"即Name Server，将DNS域名映射到运行DNS服务器的主机名。
+    "CNAME"即Canonical Name，规范名资源记录，将别名或备用的DNS域名映射到标准或主要DNS域名。
+
+Q3: How can we ask a specific dns server (instead of the default) for information about a domain name? When I use "dig www.baidu.com",the DNS server is 192.168.110.2. However if this server crashed and I have to ask the server 8.8.8.8, what command should I use?
+A3: 可以使用"$ dig @指定dns server的IP 要查询的域名"进行操作。
+    使用命令"$ dig @8.8.8.8 www.baidu.com"
+
+Q4: Do you know the process of solving domain name "lirone.csail.mit.edu"? You need to go through the steps of resolving a particular hostname, mimicing a standard recursive query. Assuming it knows nothing else about a name, a DNS resolver will ask a well-known root server. The root servers on the Internet are in the domain root-servers.net. You can use "%dig . ns" to get the list of 13 root servers.You can show us the result of each step or briefly introduce your idea.[Hint: you should start from "edu"]
+A4: 1. "$ dig . ns"找到root server(13个)
+    2. "$ dig @a.root-servers.net lirone.csail.mit.edu +norecurs"找到edu.对应server(13个)
+    3. "$ dig @a.edu-servers.net lirone.csail.mit.edu +norecurs"找到mit.edu.对应server(8个)
+    4. "$ dig @usw2.akam.net lirone.csail.mit.edu +norecurs"找到csail.mit.edu.对应server(4个)
+    5. "$ dig @auth-ns3.csail.mit.edu lirone.csail.mit.edu +norecurs"得到
+    ANSWER SECTION:
+    lirone.csail.mit.edu.	1800	IN	A	128.52.129.186
+
+Q5: Please explain the above phenomenon. Have a guess!
+A5: 使用命令"$ dig www.baidu.com +trace"的时候查询路径是.->com.->baidu.com.->www.baidu.com，而使用命令"$ dig www.twitter.com +trace"的时候查询路径是.->com.->www.twitter.com，反复查询的时候路径变成.->www.twitter.com。原因应该是根服务器和com服务器上存的都有www.twitter.com的IP，com服务器可以直接找到，根服务器根据算法决定是直接找到IP还是交给下一级服务器。
+    使用命令"$ dig www.twitter.com @1.0.0.0"的时候可以直接找到www.twitter.com的IP，使用命令"$ dig www.baidu.com @1.0.0.0"的时候显示connection timed out; no servers could be reached。原因应该是1.0.0.0服务器上储存了www.twitter.com的IP，没有www.baidu.com的IP。
+
+Q6: The ips which dig returns to you belong to google indeed. Give the reason for the above phenomenon.
+A6: 访问google需要稳定的网络环境，否则会被GFW防火墙隔离掉，而且就算是在稳定的网络环境中也不是所有dig出来的IP都可以访问google，google的访问池选择性的使一些IP可以访问。
